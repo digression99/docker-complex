@@ -1,4 +1,42 @@
 version: "3"
 services:
+  nginx:
+    restart: always # always make sure nginx is ready to go.
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./nginx
+    ports:
+      - "3050:80"
   postgres:
     image: "postgres:latest"
+  redis:
+    image: "redis:latest"
+  server:
+    build:
+      dockerfile: Dockerfile.dev # just the name.
+      context: ./server
+    volumes:
+      - /app/node_modules # don't try to overwrite this.
+      - ./server:/app # anything inside app directory except node_module is redirected.
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=redis
+      - PGUSER=postgres
+      - PGHOST=postgres
+      - PGDATABASE=postgres
+      - PGPASSWORD=postgres_password
+      - PGPORT=5432
+  client:
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./client
+    volumes:
+      - /app/node_modules
+      - ./client:/app
+  worker:
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./worker
+    volumes:
+      - /app/node_modules
+      - ./worker:/app
