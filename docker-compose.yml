@@ -1,17 +1,12 @@
-version: "3"
+version: '3'
 services:
-  nginx:
-    restart: always # always make sure nginx is ready to go.
-    build:
-      dockerfile: Dockerfile.dev
-      context: ./nginx
-    ports:
-      - "3050:80"
   postgres:
-    image: "postgres:latest"
+    image: 'postgres:latest'
   redis:
-    image: "redis:latest"
-  server:
+    image: 'redis:latest'
+  api:
+    depends_on:
+      - postgres
     build:
       dockerfile: Dockerfile.dev # just the name.
       context: ./server
@@ -40,3 +35,13 @@ services:
     volumes:
       - /app/node_modules
       - ./worker:/app
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+  nginx:
+    restart: always # always make sure nginx is ready to go.
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./nginx
+    ports:
+      - '3050:80'
